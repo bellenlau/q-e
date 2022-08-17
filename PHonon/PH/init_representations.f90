@@ -109,6 +109,100 @@ subroutine init_representations()
 END SUBROUTINE init_representations
 
 !-----------------------------------------------------------------------
+subroutine propagate_representations()
+  !-----------------------------------------------------------------------
+  !! This subroutine initializes the modes of all irreducible representations
+  !! for all q points. It writes the files patterns.#q.xml in the outdir
+  !! directory. It is used by unrecovered  phonon runs. The small group of
+  !! q must be calculated for each q. Note that all images receives the
+  !! same modes calculated by the root processor and save them on file.
+  !
+  USE kinds,         ONLY : DP
+  USE ions_base,     ONLY : tau, nat
+  USE cell_base,     ONLY : at, bg
+  USE io_global,     ONLY : stdout
+  USE symm_base,     ONLY : nsym, sr, irt, time_reversal, t_rev, s
+  USE control_ph,    ONLY : search_sym, current_iq, u_from_file, &
+                            search_sym_save, recover
+  USE modes,         ONLY : u, npert, nirr, nmodes, name_rap_mode, &
+                            num_rap_mode
+  USE disp,          ONLY : x_q, nqs, lgamma_iq
+  USE cryst_ph,      ONLY : magnetic_sym
+  USE ph_restart,    ONLY : ph_writefile, ph_readfile
+  USE control_flags, ONLY : modenum, noinv
+  USE mp,            ONLY : mp_bcast
+  USE mp_world,      ONLY : root, world_comm
+  USE mp_images,     ONLY : inter_image_comm, intra_image_comm
+  USE io_global,     ONLY : meta_ionode_id, meta_ionode, ionode_id, ionode
+
+  USE lr_symm_base,  ONLY : gi, gimq, irotmq, minus_q, nsymq, invsymq, rtau
+  USE qpoint,        ONLY : xq
+  USE control_lr,    ONLY : lgamma
+
+  implicit none
+
+  integer ::  isym, irr, iq
+  ! counters
+  LOGICAL, EXTERNAL :: symmorphic_or_nzb
+  integer :: ierr
+
+  CALL start_clock('init_rep')
+  !
+  allocate (rtau ( 3, 48, nat))
+  allocate (u ( 3 * nat, 3 * nat))
+  allocate (name_rap_mode( 3 * nat))
+  allocate (num_rap_mode( 3 * nat))
+  allocate (npert ( 3 * nat))
+  !
+  u_from_file=.FALSE.
+  !
+  ! allocate and calculate rtau, the rotated position of each atom
+  !
+  nmodes = 3 * nat
+  minus_q = (modenum .eq. 0)
+  IF ( .not. time_reversal ) minus_q = .false.
+  ! if minus_q=.t. set_irr will search for Sq=-q+G symmetry.
+  ! On output minus_q=.t. if such a symmetry has been found
+  DO iq=1, nqs
+ 
+     ! In mixing always recover from representation 0
+     ! meta_ionode reads data from previous run 
+     IF (recover) CALL ph_readfile('data_u',iq,0,ierr)
+
+     ! commento : meta_ionode broadcast data to ionodes 
+     CALL mp_bcast (u, meta_ionode_id, inter_image_comm)
+     CALL mp_bcast (nsymq, meta_ionode_id, inter_image_comm)
+     CALL mp_bcast (npert, meta_ionode_id, inter_image_comm)
+     CALL mp_bcast (nirr, meta_ionode_id, inter_image_comm)
+     CALL mp_bcast (name_rap_mode, meta_ionode_id, inter_image_comm)
+     CALL mp_bcast (num_rap_mode, meta_ionode_id, inter_image_comm)
+
+     ! commento : maybe not needed
+     CALL mp_bcast (u, ionode_id, intra_image_comm)
+     CALL mp_bcast (nsymq, ionode_id, intra_image_comm)
+     CALL mp_bcast (npert, ionode_id, intra_image_comm)
+     CALL mp_bcast (nirr, ionode_id, intra_image_comm)
+     CALL mp_bcast (name_rap_mode, ionode_id, intra_image_comm)
+     CALL mp_bcast (num_rap_mode, ionode_id, intra_image_comm)
+
+     ! ionode except meta_ionode write in their directory
+     IF (.NOT.recover) CALL ph_writefile('data_u',iq,0,ierr)
+     !
+  ENDDO
+  u_from_file=.TRUE.
+  search_sym=search_sym_save
+
+  DEALLOCATE (rtau)
+  DEALLOCATE (u)
+  DEALLOCATE (num_rap_mode)
+  DEALLOCATE (name_rap_mode)
+  DEALLOCATE (npert)
+
+  CALL stop_clock ('init_rep')
+  RETURN
+END SUBROUTINE propagate_representations
+
+!-----------------------------------------------------------------------
 subroutine initialize_grid_variables()
   !----------------------------------------------------------------------
   !! This subroutine initializes the grid variables by reading the
