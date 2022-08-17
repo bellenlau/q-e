@@ -16,7 +16,7 @@ SUBROUTINE phq_readin()
   !
   USE kinds,         ONLY : DP
   USE ions_base,     ONLY : nat, ntyp => nsp
-  USE mp,            ONLY : mp_bcast
+  USE mp,            ONLY : mp_bcast, mp_barrier
   USE mp_world,      ONLY : world_comm
   USE ions_base,     ONLY : amass, atm
   USE check_stop,    ONLY : max_seconds
@@ -39,7 +39,7 @@ SUBROUTINE phq_readin()
                             ext_recover, ext_restart, u_from_file, ldiag, &
                             search_sym, lqdir, electron_phonon, tmp_dir_phq, &
                             rec_code_read, qplot, only_init, only_wfc, &
-                            low_directory_check, nk1, nk2, nk3, k1, k2, k3
+                            low_directory_check, nk1, nk2, nk3, k1, k2, k3, mixing
   USE save_ph,       ONLY : tmp_dir_save, save_ph_input_variables
   USE gamma_gamma,   ONLY : asr
   USE partial,       ONLY : atomo, nat_todo, nat_todo_input
@@ -125,7 +125,7 @@ SUBROUTINE phq_readin()
                        lshift_q, read_dns_bare, d2ns_type, diagonalization, &
                        ldvscf_interpolate, do_long_range, do_charge_neutral, &
                        wpot_dir, ahc_dir, ahc_nbnd, ahc_nbndskip, &
-                       skip_upperfan
+                       skip_upperfan, mixing
 
   ! tr2_ph       : convergence threshold
   ! amass        : atomic masses
@@ -304,6 +304,7 @@ SUBROUTINE phq_readin()
   k1       = 0
   k2       = 0
   k3       = 0
+  mixing   = .FALSE.
   !
   ! dvscf_interpolate
   ldvscf_interpolate = .FALSE.
@@ -636,6 +637,7 @@ SUBROUTINE phq_readin()
   ext_restart=.FALSE.
   ext_recover=.FALSE.
   rec_code_read=-1000
+  
   IF (recover) THEN
 !
 !    With a recover run we read here the mesh of q points, the current iq,
@@ -649,6 +651,7 @@ SUBROUTINE phq_readin()
      IF (ierr /= 0 .OR. ierr1 /= 0 ) THEN
         write(stdout,'(5x,"Run is not recoverable starting from scratch")')
         recover=.FALSE.
+        PRINT*, 'after we are here ', recover
         goto 1001
      ENDIF
 !
@@ -674,6 +677,18 @@ SUBROUTINE phq_readin()
      u_from_file=.true.
   ENDIF
 1001 CONTINUE
+
+!###################### currently working for zero only#################
+  CALL mp_bcast(mixing, meta_ionode_id, world_comm)
+  IF ( mixing ) THEN
+      ! move up
+      IF (meta_ionode .AND. (.NOT.recover) ) CALL errore('phq_readin', 'mixing requires recover=.true.', 1) 
+      IF ( qplot ) CALL errore('phq_readin', 'mixing and qplot not supported yet', 1)
+      IF ( ldisp ) CALL errore('phq_readin', 'mixing and ldisp not supported yet', 1)
+      !add check on previous run
+      !IF ( meta_ionode .AND.  ) CALL errore('phq_readin', 'mixing requires only_init in previous run', 1)
+  ENDIF
+!###################### currently working for zero only#################
 
   IF (qplot.AND..NOT.recover) THEN
      IF (q2d) THEN

@@ -269,6 +269,8 @@ MODULE control_ph
   !! if TRUE computes only bands
   LOGICAL :: only_init=.FALSE.
   !! if TRUE computes only initial stuff
+  LOGICAL :: mixing=.FALSE.
+  !! Needed for mixed parallelization after only_init
   LOGICAL :: with_ext_images=.FALSE.
   !! if TRUE use an external driver to decide what each image does.
   LOGICAL :: always_run=.FALSE.
