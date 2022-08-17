@@ -79,7 +79,7 @@ SUBROUTINE check_initial_status(auxdyn)
                               start_irr, last_irr, newgrid, qplot, &
                               done_zeu, done_start_zstar, done_epsil, &
                               done_zue, with_ext_images, always_run, trans, &
-                              u_from_file, epsil
+                              u_from_file, epsil, mixing
   USE save_ph,         ONLY : tmp_dir_save
   USE units_ph,        ONLY : iudyn
   USE ph_restart,      ONLY : check_directory_phsave, check_available_bands,&
@@ -87,10 +87,11 @@ SUBROUTINE check_initial_status(auxdyn)
   USE freq_ph,         ONLY : current_iu
   USE io_rho_xml,      ONLY : write_scf
   USE mp_images,       ONLY : nimage, intra_image_comm
-  USE io_global,       ONLY : ionode, ionode_id
+  USE io_global,       ONLY : ionode, ionode_id, meta_ionode_id
   USE io_files,        ONLY : prefix , create_directory
-  USE mp,              ONLY : mp_bcast
+  USE mp,              ONLY : mp_bcast, mp_barrier
   USE mp_global,       ONLY : mp_global_end
+  USE mp_world,        ONLY : world_comm
   USE el_phon,         ONLY : elph_mat
   USE noncollin_module, ONLY : noncolin, domag
   ! YAMBO >
@@ -115,7 +116,8 @@ SUBROUTINE check_initial_status(auxdyn)
   ! point the code has read the q mesh from the files contained in 
   ! prefix.phsave
   !
-  IF (.NOT.recover) THEN
+
+  IF ((.NOT.recover).AND.(.NOT. mixing)) THEN
      !
      ! recover file not found or not looked for
      !
@@ -170,6 +172,57 @@ SUBROUTINE check_initial_status(auxdyn)
         STOP
      ENDIF
   ENDIF
+!
+! If this is a mixed run, only meta_ionode read the q mesh. 
+! It needs to be propagated to world_comm
+!
+!######################################### mixing ###################################
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  IF ( mixing ) THEN
+     !
+     call mp_bcast(current_iq, meta_ionode_id, world_comm)
+     call mp_bcast(current_iu, meta_ionode_id, world_comm)
+     !
+     IF (ldisp) THEN   !!!!####################### not supported yet
+        !
+        ! ... Calculate the q-points for the dispersion
+        !
+        IF (.NOT.recover) THEN
+            IF(elph_mat) then
+               CALL q_points_wannier()
+            ELSE
+               IF ((.NOT.qplot) .AND. (.NOT.recover)) CALL q_points()
+            ENDIF
+        ENDIF
+        !
+        ! YAMBO >
+     ELSE IF (.NOT.elph_yambo .AND. .NOT. dvscf_yambo) then
+        ! YAMBO <
+        !
+        IF ( .NOT. recover ) THEN
+           nqs=1
+           last_q=1
+           ALLOCATE(x_q(3,1))
+           ALLOCATE(wq(1))
+           ALLOCATE(lgamma_iq(1))
+           x_q(:,1)=xq(:)   !xq broadcasted in phq_readin
+           wq(1)=1.0d0
+           lgamma_iq(1)=lgamma
+        END IF
+        !
+     END IF
+     !
+     !   Save the mesh of q and the control flags on file
+     !
+     IF ( .NOT. recover ) CALL ph_writefile('init',current_iq,current_iu,ierr)
+     !
+     !   Initialize the representations and write them on file.
+     !
+     IF (trans .OR. epsil .OR. ldvscf_interpolate.or.elph_mat) CALL propagate_representations() 
+     !
+  ENDIF
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!########################## mixing ############################################
 
   IF (last_q<1.or.last_q>nqs) last_q=nqs
   IF (start_q<1.or.start_q>last_q) call errore('check_initial_status', &
@@ -364,7 +417,7 @@ SUBROUTINE check_initial_status(auxdyn)
    USE ions_base, ONLY : nat
    USE disp, ONLY : comp_iq, nqs, nq1, nq2, nq3
    USE grid_irr_iq, ONLY : irr_iq, npert_irr_iq, comp_irr_iq, nsymq_iq
-   USE control_ph, ONLY : start_q, last_q
+   USE control_ph, ONLY : start_q, last_q, mixing
    USE io_global,  ONLY : stdout
    USE mp_images,  ONLY : nimage, my_image_id
    USE symm_base,  ONLY : nsym
@@ -395,7 +448,8 @@ SUBROUTINE check_initial_status(auxdyn)
         DO irr = 1, irr_iq(iq)
            IF (comp_irr_iq(irr,iq)) THEN
               total_work = total_work + npert_irr_iq(irr, iq) * nsym / nsymq_iq(iq)
-              IF (irr==1) total_work = total_work + nsym / nsymq_iq(iq)
+              ! This additional cycle is due to d2ionq
+              IF (irr==1 .AND. (.NOT.mixing)) total_work = total_work + nsym / nsymq_iq(iq)
               total_nrapp = total_nrapp + 1
            ENDIF
         END DO
@@ -421,7 +475,7 @@ SUBROUTINE check_initial_status(auxdyn)
            image_iq(irr,iq) = image
            work(image)=work(image) + npert_irr_iq(irr, iq) * nsym / nsymq_iq(iq)
            work_so_far=work_so_far + npert_irr_iq(irr, iq) * nsym / nsymq_iq(iq)
-           IF (irr==1) THEN
+           IF (irr==1 .AND. (.NOT.mixing)) THEN
               image_iq(0,iq)=image
               work(image)=work(image) + nsym / nsymq_iq(iq)
               work_so_far=work_so_far + nsym / nsymq_iq(iq)
