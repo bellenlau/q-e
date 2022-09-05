@@ -677,6 +677,14 @@ SUBROUTINE phq_readin()
   ENDIF
 1001 CONTINUE
 
+!###################### currently working for zero only #################
+  CALL mp_bcast(save_wfc, meta_ionode_id, world_comm)
+  IF ( .NOT.save_wfc ) THEN
+      IF ( qplot ) CALL errore('phq_readin', 'save_wfc and qplot not supported yet', 1)
+      IF ( ldisp ) CALL errore('phq_readin', 'save_wfc and ldisp not supported yet', 1)
+  ENDIF
+!###################### currently working for zero only #################
+
   IF (qplot.AND..NOT.recover) THEN
      IF (q2d) THEN
         nqs=wqaux(2)*wqaux(3)
