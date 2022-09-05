@@ -6,7 +6,7 @@
 ! or http://www.gnu.org/copyleft/gpl.txt .
 !
 !----------------------------------------------------------------------------
-SUBROUTINE read_file()
+SUBROUTINE read_file(write_buf)
   !----------------------------------------------------------------------------
   !
   ! Wrapper routine, for backwards compatibility
@@ -26,9 +26,12 @@ SUBROUTINE read_file()
   IMPLICIT NONE
   !
   INTEGER :: ik
-  LOGICAL :: exst, wfc_is_collected
+  LOGICAL :: exst, wfc_is_collected, save_here
+  LOGICAL,OPTIONAL,INTENT(IN) :: write_buf
   !
+  save_here = .true.
   wfc_is_collected = .true.
+  IF ( PRESENT( write_buf ) ) save_here = write_buf
   CALL read_file_new( wfc_is_collected )
   !
   ! ... Open unit iunwfc, for Kohn-Sham orbitals - we assume that wfcs
@@ -48,7 +51,7 @@ SUBROUTINE read_file()
      CALL using_evc(1)
      DO ik = 1, nks
         CALL read_collected_wfc ( restart_dir(), ik, evc )
-        CALL save_buffer ( evc, nwordwfc, iunwfc, ik )
+        IF ( save_here ) CALL save_buffer ( evc, nwordwfc, iunwfc, ik )
      END DO
      !
   ELSE

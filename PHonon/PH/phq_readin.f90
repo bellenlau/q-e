@@ -16,7 +16,7 @@ SUBROUTINE phq_readin()
   !
   USE kinds,         ONLY : DP
   USE ions_base,     ONLY : nat, ntyp => nsp
-  USE mp,            ONLY : mp_bcast
+  USE mp,            ONLY : mp_bcast, mp_barrier
   USE mp_world,      ONLY : world_comm
   USE ions_base,     ONLY : amass, atm
   USE check_stop,    ONLY : max_seconds
@@ -39,7 +39,7 @@ SUBROUTINE phq_readin()
                             ext_recover, ext_restart, u_from_file, ldiag, &
                             search_sym, lqdir, electron_phonon, tmp_dir_phq, &
                             rec_code_read, qplot, only_init, only_wfc, &
-                            low_directory_check, nk1, nk2, nk3, k1, k2, k3
+                            low_directory_check, nk1, nk2, nk3, k1, k2, k3, save_wfc
   USE save_ph,       ONLY : tmp_dir_save, save_ph_input_variables
   USE gamma_gamma,   ONLY : asr
   USE partial,       ONLY : atomo, nat_todo, nat_todo_input
@@ -125,7 +125,7 @@ SUBROUTINE phq_readin()
                        lshift_q, read_dns_bare, d2ns_type, diagonalization, &
                        ldvscf_interpolate, do_long_range, do_charge_neutral, &
                        wpot_dir, ahc_dir, ahc_nbnd, ahc_nbndskip, &
-                       skip_upperfan
+                       skip_upperfan, save_wfc
 
   ! tr2_ph       : convergence threshold
   ! amass        : atomic masses
@@ -304,6 +304,7 @@ SUBROUTINE phq_readin()
   k1       = 0
   k2       = 0
   k3       = 0
+  save_wfc = .TRUE.
   !
   ! dvscf_interpolate
   ldvscf_interpolate = .FALSE.
@@ -636,6 +637,7 @@ SUBROUTINE phq_readin()
   ext_restart=.FALSE.
   ext_recover=.FALSE.
   rec_code_read=-1000
+  
   IF (recover) THEN
 !
 !    With a recover run we read here the mesh of q points, the current iq,
@@ -716,7 +718,7 @@ SUBROUTINE phq_readin()
   !
   ! DFPT+U: the occupation matrix ns is read via read_file
   !
-  CALL read_file ( )
+  CALL read_file ( save_wfc )
   !
   magnetic_sym=noncolin .AND. domag
   !
