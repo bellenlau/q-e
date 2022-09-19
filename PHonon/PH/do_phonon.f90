@@ -46,8 +46,7 @@ SUBROUTINE do_phonon(auxdyn)
   USE ahc,            ONLY : elph_ahc, elph_do_ahc
   USE io_files,       ONLY : iunwfc
   USE buffers,        ONLY : close_buffer
-  USE control_flags,   ONLY : use_gpu
-  
+
   IMPLICIT NONE
   !
   CHARACTER (LEN=256), INTENT(IN) :: auxdyn

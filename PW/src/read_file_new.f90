@@ -29,12 +29,9 @@ SUBROUTINE read_file(write_buf)
   LOGICAL :: exst, wfc_is_collected, save_here
   LOGICAL,OPTIONAL,INTENT(IN) :: write_buf
   !
+  save_here = .true.
   wfc_is_collected = .true.
-  IF ( PRESENT( write_buf ) ) THEN
-          save_here = write_buf
-  ELSE
-          save_here = .true.
-  END IF
+  IF ( PRESENT( write_buf ) ) save_here = write_buf
   CALL read_file_new( wfc_is_collected )
   !
   ! ... Open unit iunwfc, for Kohn-Sham orbitals - we assume that wfcs
@@ -47,11 +44,15 @@ SUBROUTINE read_file(write_buf)
   !
   ! ... read wavefunctions in collected format, write them to file
   !
-  PRINT*, 'save here is', save_here
   IF ( wfc_is_collected ) THEN
      !
-     WRITE( stdout, '(5x,A)') &
+     IF ( save_here ) THEN
+        WRITE( stdout, '(5x,A)') &
           'Reading collected, re-writing distributed wavefunctions'
+     ELSE
+        WRITE( stdout, '(5x,A)') &
+          'Reading collected, re-writing distributed skipped'
+     ENDIF
      CALL using_evc(1)
      DO ik = 1, nks
         CALL read_collected_wfc ( restart_dir(), ik, evc )

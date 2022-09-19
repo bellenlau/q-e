@@ -683,8 +683,8 @@ SUBROUTINE phq_readin()
       IF ( qplot ) CALL errore('phq_readin', 'save_wfc and qplot not supported yet', 1)
       IF ( ldisp ) CALL errore('phq_readin', 'save_wfc and ldisp not supported yet', 1)
       IF ( only_init ) CALL errore('phq_readin', 'save_wfc and only_init not supported yet', 1)
+      IF ( meta_ionode ) save_wfc= .true. ! At least meta_ionode writes, works with 1q only
   ENDIF
-  IF ( meta_ionode ) save_wfc= .true. ! At least meta_ionode writes, works with 1q only
 !###################### currently working for zero only #################
 
   IF (qplot.AND..NOT.recover) THEN
