@@ -320,6 +320,8 @@ MODULE control_ph
   !! if TRUE use new k-point grid nk1,nk2,nk3
   INTEGER :: nk1,nk2,nk3, k1,k2,k3
   !! new Monkhorst-Pack k-point grid
+  LOGICAL :: mixing
+  !! new workflow
   !
 END MODULE control_ph
 !

@@ -79,7 +79,7 @@ SUBROUTINE check_initial_status(auxdyn)
                               start_irr, last_irr, newgrid, qplot, &
                               done_zeu, done_start_zstar, done_epsil, &
                               done_zue, with_ext_images, always_run, trans, &
-                              u_from_file, epsil
+                              u_from_file, epsil, mixing
   USE save_ph,         ONLY : tmp_dir_save
   USE units_ph,        ONLY : iudyn
   USE ph_restart,      ONLY : check_directory_phsave, check_available_bands,&
@@ -364,7 +364,7 @@ SUBROUTINE check_initial_status(auxdyn)
    USE ions_base, ONLY : nat
    USE disp, ONLY : comp_iq, nqs, nq1, nq2, nq3
    USE grid_irr_iq, ONLY : irr_iq, npert_irr_iq, comp_irr_iq, nsymq_iq
-   USE control_ph, ONLY : start_q, last_q
+   USE control_ph, ONLY : start_q, last_q, mixing
    USE io_global,  ONLY : stdout
    USE mp_images,  ONLY : nimage, my_image_id
    USE symm_base,  ONLY : nsym
@@ -395,7 +395,7 @@ SUBROUTINE check_initial_status(auxdyn)
         DO irr = 1, irr_iq(iq)
            IF (comp_irr_iq(irr,iq)) THEN
               total_work = total_work + npert_irr_iq(irr, iq) * nsym / nsymq_iq(iq)
-              IF (irr==1) total_work = total_work + nsym / nsymq_iq(iq)
+              IF (irr==1 .AND. (.NOT.mixing)) total_work = total_work + nsym / nsymq_iq(iq)
               total_nrapp = total_nrapp + 1
            ENDIF
         END DO
@@ -421,7 +421,7 @@ SUBROUTINE check_initial_status(auxdyn)
            image_iq(irr,iq) = image
            work(image)=work(image) + npert_irr_iq(irr, iq) * nsym / nsymq_iq(iq)
            work_so_far=work_so_far + npert_irr_iq(irr, iq) * nsym / nsymq_iq(iq)
-           IF (irr==1) THEN
+           IF (irr==1 .AND. (.NOT.mixing)) THEN
               image_iq(0,iq)=image
               work(image)=work(image) + nsym / nsymq_iq(iq)
               work_so_far=work_so_far + nsym / nsymq_iq(iq)
