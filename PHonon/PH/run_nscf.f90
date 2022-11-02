@@ -126,14 +126,8 @@ SUBROUTINE run_nscf(do_band, iq)
   ENDIF
   !
   IF (.NOT.reduce_io.and.do_band) THEN
-     IF ( only_wfc ) THEN
         ! write wavefunctions to file in portable format
         CALL punch( 'all' )
-     ELSE
-        ! do not write wavefunctions: not sure why, I think
-        ! they are written anyway in internal format - PG
-        CALL punch( 'config' )
-     END IF
   END IF
   !
   CALL seqopn( 4, 'restart', 'UNFORMATTED', exst )
