@@ -715,7 +715,7 @@ SUBROUTINE phq_readin()
   !
   ! Here all needed data from the scf calculation are read
   !
-  CALL read_file_ph ( )
+  CALL read_file_ph ( recover )
   !
   magnetic_sym=noncolin .AND. domag
   !

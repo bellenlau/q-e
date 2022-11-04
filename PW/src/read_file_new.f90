@@ -64,7 +64,7 @@ SUBROUTINE read_file()
 END SUBROUTINE read_file
 !
 !----------------------------------------------------------------------------
-SUBROUTINE read_file_ph()
+SUBROUTINE read_file_ph( recover )
   !----------------------------------------------------------------------------
   !
   ! Wrapper routine, for compatibility with the phonon code: as "read_file",
@@ -92,8 +92,11 @@ SUBROUTINE read_file_ph()
   IMPLICIT NONE
   !
   INTEGER :: ik
-  LOGICAL :: exst, needwf, wfc_is_collected
+  LOGICAL :: exst, needwf, wfc_is_collected, recover_run
+  LOGICAL, OPTIONAL :: recover
   !
+  recover_run = .false.
+  IF (PRESENT(recover)) recover_run=recover
   WRITE( stdout, '(/,5x,A)') &
        'Reading xml data from directory:', TRIM( restart_dir() )
   !
@@ -135,26 +138,28 @@ SUBROUTINE read_file_ph()
   !
   wfc_dir = tmp_dir
   !
-  IF ( wfc_is_collected ) THEN
+  IF ( .NOT.recover_run ) THEN 
+     IF ( wfc_is_collected ) THEN
+        !
+        nwordwfc = nbnd*npwx*npol
+        CALL open_buffer ( iunwfc, 'wfc', nwordwfc, io_level, exst )
+        !
+        ! ... read wavefunctions in collected format, write them to file or buffer
+        !
+        WRITE( stdout, '(5x,A)') &
+             'Reading collected, re-writing distributed wavefunctions'
+        CALL using_evc(1)
+        DO ik = 1, nks
+           CALL read_collected_wfc ( restart_dir(), ik, evc )
+           CALL save_buffer ( evc, nwordwfc, iunwfc, ik )
+        END DO
+        !
+     ELSE
+        CALL errore ('read_file',' Wavefunctions in collected format not available',1)
+     END IF
      !
-     nwordwfc = nbnd*npwx*npol
-     CALL open_buffer ( iunwfc, 'wfc', nwordwfc, io_level, exst )
-     !
-     ! ... read wavefunctions in collected format, write them to file or buffer
-     !
-     WRITE( stdout, '(5x,A)') &
-          'Reading collected, re-writing distributed wavefunctions'
-     CALL using_evc(1)
-     DO ik = 1, nks
-        CALL read_collected_wfc ( restart_dir(), ik, evc )
-        CALL save_buffer ( evc, nwordwfc, iunwfc, ik )
-     END DO
-     !
-  ELSE
-     CALL errore ('read_file',' Wavefunctions in collected format not available',1)
+     IF ( io_level /= 0 ) CALL close_buffer  ( iunwfc, 'KEEP' )
   END IF
-  !
-  IF ( io_level /= 0 ) CALL close_buffer  ( iunwfc, 'KEEP' )
   !
 END SUBROUTINE read_file_ph
 !
