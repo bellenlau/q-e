@@ -1,5 +1,5 @@
 !
-! Copyright (C) 2001-2007 Quantum ESPRESSO group
+! Copyright (C) 2001-2023 Quantum ESPRESSO group
 ! This file is distributed under the terms of the
 ! GNU General Public License. See the file `License'
 ! in the root directory of the present distribution,
@@ -24,7 +24,9 @@
 !                            returns -1 if "label" has never been started
 ! ... All output and warnings are written to stdout
 ! ... Clocks should be started, read, stopped either on all processors, or 
-! ... only on one, but not half and half! For parallel debugging, uncomment:
+! ... only on one, but not half and half! 
+! 
+! For parallel debugging, uncomment:
 !#define __TRACE
 ! ... See also comments in subroutine print_this_clock about parallel case
 !
@@ -106,6 +108,7 @@ SUBROUTINE init_clocks( go )
      clock_label(n) = ' '
      !
   ENDDO
+  !
 #if defined (__TRACE)
   write(stdout,*) '*** Code flow traced exploiting clocks calls ***'
   write(stdout,*) '--- Code flow traced down to depth ',max_print_depth
@@ -342,14 +345,15 @@ FUNCTION get_cpu_and_wall( n) result (t)
   IF (t0cpu(n) == notrunning ) THEN 
      t(1) = cputime(n)
      t(2)  = walltime(n)
-   ELSE 
+  ELSE 
      t(1)   = cputime(n) + f_tcpu() - t0cpu(n)
      t(2)   = walltime(n)+ f_wall() - t0wall(n)
-   END IF 
+  END IF 
 #if defined(PRINT_AVG_CPU_TIME_PER_THREAD)
   ! rescale the elapsed cpu time on a per-thread basis
   t(1)    = t(1)  * mpi_per_thread
 #endif
+  !
 END FUNCTION get_cpu_and_wall      
 !----------------------------------------------------------------------------
 SUBROUTINE print_this_clock( n )
