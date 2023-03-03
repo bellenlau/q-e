@@ -408,15 +408,9 @@ end program test_fft_scatter_mod_gpu
 SUBROUTINE stop_clock(label)
 CHARACTER(*) :: label
 END SUBROUTINE stop_clock
+
 !
-SUBROUTINE start_clock(label)
+SUBROUTINE stop_clock(label)
 CHARACTER(*) :: label
-END SUBROUTINE start_clock
+END SUBROUTINE stop_clock
 !
-SUBROUTINE stop_clock_gpu(label)
-CHARACTER(*) :: label
-END SUBROUTINE stop_clock_gpu
-!
-SUBROUTINE start_clock_gpu(label)
-CHARACTER(*) :: label
-END SUBROUTINE start_clock_gpu

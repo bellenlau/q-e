@@ -776,11 +776,3 @@ END SUBROUTINE stop_clock
 SUBROUTINE start_clock(label)
 CHARACTER(*) :: label
 END SUBROUTINE start_clock
-!
-SUBROUTINE stop_clock_gpu(label)
-CHARACTER(*) :: label
-END SUBROUTINE stop_clock_gpu
-!
-SUBROUTINE start_clock_gpu(label)
-CHARACTER(*) :: label
-END SUBROUTINE start_clock_gpu

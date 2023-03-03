@@ -108,7 +108,7 @@ subroutine dvqpsi_us (ik, uact, addnlcc, becp1, alphap)
   nlp_d  = dfftp%nl
 #endif
   ! 
-  call start_clock_gpu ('dvqpsi_us')
+  call start_clock ('dvqpsi_us')
   allocate (aux1(dffts%nnr))
   allocate (aux2(dffts%nnr))
   !
@@ -329,7 +329,7 @@ subroutine dvqpsi_us (ik, uact, addnlcc, becp1, alphap)
   !
   call dvqpsi_us_only (ik, uact, becp1, alphap)
 
-  call stop_clock_gpu ('dvqpsi_us')
+  call stop_clock ('dvqpsi_us')
 #if !defined(__CUDA)
   DEALLOCATE(nl_d)
   DEALLOCATE(nlp_d)

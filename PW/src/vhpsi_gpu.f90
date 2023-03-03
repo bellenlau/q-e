@@ -61,7 +61,7 @@ SUBROUTINE vhpsi_gpu( ldap, np, mps, psip_d, hpsi_d )
   attributes(DEVICE) :: wfcU_d, psip_d, hpsi_d
 #endif
   !
-  CALL start_clock_gpu( 'vhpsi' )
+  CALL start_clock( 'vhpsi' )
   !
   ! Offset of atomic wavefunctions initialized in setup and stored in offsetU
   !
@@ -85,7 +85,7 @@ SUBROUTINE vhpsi_gpu( ldap, np, mps, psip_d, hpsi_d )
   !
   DEALLOCATE( wfcU_d )
   !
-  CALL stop_clock_gpu( 'vhpsi' )
+  CALL stop_clock( 'vhpsi' )
   !
   RETURN
   !

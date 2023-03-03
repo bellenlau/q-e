@@ -76,7 +76,7 @@ SUBROUTINE force_hub( forceh )
    REAL(DP), ALLOCATABLE :: projrd(:,:)
    COMPLEX(DP), ALLOCATABLE :: projkd(:,:)
    !
-   CALL start_clock_gpu( 'force_hub' )
+   CALL start_clock( 'force_hub' )
    !
    save_flag = use_bgrp_in_hpsi ; use_bgrp_in_hpsi = .FALSE.
    !
@@ -356,7 +356,7 @@ SUBROUTINE force_hub( forceh )
 #endif
    use_bgrp_in_hpsi = save_flag
    !
-   CALL stop_clock_gpu( 'force_hub' )
+   CALL stop_clock( 'force_hub' )
    !
    RETURN
    !
@@ -1021,7 +1021,7 @@ SUBROUTINE dngdtau_gamma( ldim, rproj, spsi, alpha, jkb0, ipol, ik, nb_s, &
    REAL(DP), ALLOCATABLE :: dproj(:,:)
    INTEGER, EXTERNAL :: find_viz
    !
-   CALL start_clock_gpu( 'dngdtau' )
+   CALL start_clock( 'dngdtau' )
    !
    ALLOCATE( dproj(nwfcU,nb_s:nb_e) )
    !
@@ -1133,7 +1133,7 @@ SUBROUTINE dngdtau_gamma( ldim, rproj, spsi, alpha, jkb0, ipol, ik, nb_s, &
    ENDDO
 ! !omp end parallel do
    !
-   CALL stop_clock_gpu( 'dngdtau' )
+   CALL stop_clock( 'dngdtau' )
    !
    RETURN
    !
@@ -1201,7 +1201,7 @@ SUBROUTINE dprojdtau_k( spsi, alpha, na, ijkb0, ipol, ik, nb_s, nb_e, mykey, dpr
    COMPLEX(DP), ALLOCATABLE :: dwfc(:,:), &
                                dproj0(:,:) !derivative of the projector
    !
-   CALL start_clock_gpu( 'dprojdtau' )
+   CALL start_clock( 'dprojdtau' )
    !
    !$acc data present_or_copyin(spsi,dproj)
    !
@@ -1393,7 +1393,7 @@ SUBROUTINE dprojdtau_k( spsi, alpha, na, ijkb0, ipol, ik, nb_s, nb_e, mykey, dpr
    !
    !$acc end data
    !
-   CALL stop_clock_gpu( 'dprojdtau' )
+   CALL stop_clock( 'dprojdtau' )
    !
    RETURN
    !
@@ -1847,7 +1847,7 @@ SUBROUTINE dprojdtau_gamma( spsi, alpha, ijkb0, ipol, ik, nb_s, nb_e, &
    IF (Hubbard_projectors.EQ."ortho-atomic") CALL errore( "dprojdtau_gamma", &
                 " Forces with gamma-only and ortho-atomic are not supported", 1 )
    !
-   CALL start_clock_gpu( 'dprojdtau' )
+   CALL start_clock( 'dprojdtau' )
    !
    !$acc data present_or_copyin(dproj,spsi,wfcU)
    !
@@ -2045,7 +2045,7 @@ SUBROUTINE dprojdtau_gamma( spsi, alpha, ijkb0, ipol, ik, nb_s, nb_e, &
    !
    !$acc end data
    !
-   CALL stop_clock_gpu( 'dprojdtau' )
+   CALL stop_clock( 'dprojdtau' )
    !
    RETURN
    !

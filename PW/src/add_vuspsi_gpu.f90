@@ -42,7 +42,7 @@ SUBROUTINE add_vuspsi_gpu( lda, n, m, hpsi_d )
   attributes(DEVICE) :: hpsi_d
   !
   !
-  CALL start_clock_gpu( 'add_vuspsi' )  
+  CALL start_clock( 'add_vuspsi' )  
   !
   IF ( gamma_only ) THEN
      !
@@ -58,7 +58,7 @@ SUBROUTINE add_vuspsi_gpu( lda, n, m, hpsi_d )
      !
   END IF
   !
-  CALL stop_clock_gpu( 'add_vuspsi' )  
+  CALL stop_clock( 'add_vuspsi' )  
   !
   RETURN
   !

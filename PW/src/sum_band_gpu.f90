@@ -68,7 +68,7 @@ SUBROUTINE sum_band_gpu()
   COMPLEX(DP), ALLOCATABLE :: psicd(:), kplusg_evc(:,:)
   !
   !
-  CALL start_clock_gpu( 'sum_band' )
+  CALL start_clock( 'sum_band' )
   !
   IF ( nhm > 0 ) THEN
      becsum(:,:,:) = 0.D0
@@ -85,9 +85,9 @@ SUBROUTINE sum_band_gpu()
   !
   ! ... calculates weights of Kohn-Sham orbitals used in calculation of rho
   !
-  CALL start_clock_gpu( 'sum_band:weights' )
+  CALL start_clock( 'sum_band:weights' )
   CALL weights()
-  CALL stop_clock_gpu( 'sum_band:weights' )
+  CALL stop_clock( 'sum_band:weights' )
   !
   ! ... btype, used in diagonalization, is set here: a band is considered empty
   ! ... and computed with low accuracy only when its occupation is < 0.01, and
@@ -145,7 +145,7 @@ SUBROUTINE sum_band_gpu()
   !
   eband = 0.D0
   !
-  CALL start_clock_gpu( 'sum_band:loop' )
+  CALL start_clock( 'sum_band:loop' )
   !
   !$acc enter data create(evc)
   IF (noncolin) THEN
@@ -171,7 +171,7 @@ SUBROUTINE sum_band_gpu()
     !$acc exit data delete(psic)
   ENDIF
   !
-  CALL stop_clock_gpu( 'sum_band:loop' )
+  CALL stop_clock( 'sum_band:loop' )
   CALL mp_sum( eband, inter_pool_comm )
   CALL mp_sum( eband, inter_bgrp_comm )
   !
@@ -229,7 +229,7 @@ SUBROUTINE sum_band_gpu()
   !
   ! ... symmetrize rho(G) 
   !
-  CALL start_clock_gpu( 'sum_band:sym_rho' )
+  CALL start_clock( 'sum_band:sym_rho' )
   CALL sym_rho( nspin_mag, rho%of_g )
   !
   ! ... synchronize rho%of_r to the calculated rho%of_g (use psic as work array)
@@ -251,7 +251,7 @@ SUBROUTINE sum_band_gpu()
      CALL rho_g2r( dfftp, rho%kin_g, rho%kin_r )
      !
   ENDIF
-  CALL stop_clock_gpu( 'sum_band:sym_rho' )
+  CALL stop_clock( 'sum_band:sym_rho' )
   !
   ! ... if LSDA rho%of_r and rho%of_g are converted from (up,dw) to
   ! ... (up+dw,up-dw) format.
@@ -331,20 +331,20 @@ SUBROUTINE sum_band_gpu()
           !
           npw = ngk(ik)
           !
-          CALL start_clock_gpu( 'sum_band:buffer' )
+          CALL start_clock( 'sum_band:buffer' )
           IF ( nks > 1 ) &
              CALL get_buffer ( evc, nwordwfc, iunwfc, ik )
           IF ( nks > 1 ) CALL using_evc(2) ! get_buffer(evc, ...) evc is updated (intent out)
           IF ( nks > 1 ) CALL using_evc_d(0) ! sync on the GPU
           !$acc update device(evc)
           !
-          CALL stop_clock_gpu( 'sum_band:buffer' )
+          CALL stop_clock( 'sum_band:buffer' )
           !
-          CALL start_clock_gpu( 'sum_band:init_us_2' )
+          CALL start_clock( 'sum_band:init_us_2' )
           !
           IF ( nkb > 0 ) CALL init_us_2( npw, igk_k(1,ik), xk(1,ik), vkb, .TRUE. )
           !
-          CALL stop_clock_gpu( 'sum_band:init_us_2' )
+          CALL stop_clock( 'sum_band:init_us_2' )
           !
           ! ... here we compute the band energy: the sum of the eigenvalues
           !
@@ -591,20 +591,20 @@ SUBROUTINE sum_band_gpu()
           IF ( lsda ) current_spin = isk(ik)
           npw = ngk (ik)
           !
-          CALL start_clock_gpu( 'sum_band:buffer' )
+          CALL start_clock( 'sum_band:buffer' )
           IF ( nks > 1 ) THEN
              CALL get_buffer( evc, nwordwfc, iunwfc, ik )
              CALL using_evc(2)
              CALL using_evc_d(0)  ! sync evc on GPU, OPTIMIZE (use async here)
           ENDIF
           !$acc update device(evc)
-          CALL stop_clock_gpu( 'sum_band:buffer' )
+          CALL stop_clock( 'sum_band:buffer' )
           !
-          CALL start_clock_gpu( 'sum_band:init_us_2' )
+          CALL start_clock( 'sum_band:init_us_2' )
           !
           IF ( nkb > 0 ) CALL init_us_2( npw, igk_k(1,ik), xk(1,ik), vkb, .TRUE. )
           !
-          CALL stop_clock_gpu( 'sum_band:init_us_2' )
+          CALL stop_clock( 'sum_band:init_us_2' )
           !
           ! ... here we compute the band energy: the sum of the eigenvalues
           !
@@ -1008,7 +1008,7 @@ SUBROUTINE sum_bec_gpu ( ik, current_spin, ibnd_start, ibnd_end, this_bgrp_nbnd 
   !
   CALL using_wg_d(0)
   !
-  CALL start_clock_gpu( 'sum_band:calbec' )
+  CALL start_clock( 'sum_band:calbec' )
   npw = ngk(ik)
   IF ( .NOT. real_space ) THEN
      CALL using_evc_d(0) 
@@ -1038,7 +1038,7 @@ SUBROUTINE sum_bec_gpu ( ik, current_spin, ibnd_start, ibnd_end, this_bgrp_nbnd 
        call mp_sum(becp%k,inter_bgrp_comm)
      endif
   ENDIF
-  CALL stop_clock_gpu( 'sum_band:calbec' )
+  CALL stop_clock( 'sum_band:calbec' )
   !
   ! In the EXX case with ultrasoft or PAW, a copy of becp will be
   ! saved in a global variable to be rotated later
@@ -1047,7 +1047,7 @@ SUBROUTINE sum_bec_gpu ( ik, current_spin, ibnd_start, ibnd_end, this_bgrp_nbnd 
      CALL store_becxx0(ik, becp)
   ENDIF
   !
-  CALL start_clock_gpu( 'sum_band:becsum' )
+  CALL start_clock( 'sum_band:becsum' )
   CALL using_becp_d_auto(0)
   !
   DO np = 1, ntyp
@@ -1225,7 +1225,7 @@ SUBROUTINE sum_bec_gpu ( ik, current_spin, ibnd_start, ibnd_end, this_bgrp_nbnd 
      if (tqr) ebecsum=ebecsum_d
   endif
   !
-  CALL stop_clock_gpu( 'sum_band:becsum' )
+  CALL stop_clock( 'sum_band:becsum' )
   !
 END SUBROUTINE sum_bec_gpu
 !

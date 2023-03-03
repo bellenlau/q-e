@@ -184,7 +184,7 @@ CONTAINS
     INTEGER :: ibnd, ig
 
     k = nbnd_occ (ikqs(ik))
-    CALL start_clock_gpu ('ch_psi_all_k')
+    CALL start_clock ('ch_psi_all_k')
     !$acc data present(evq, ps, hpsi, spsi)
     !
     !   Here we compute the projector in the valence band
@@ -228,7 +228,7 @@ CONTAINS
     !
     !    And apply S again
     !
-    CALL start_clock_gpu ('ch_psi_calbec')
+    CALL start_clock ('ch_psi_calbec')
     if (use_bgrp_in_hpsi .AND. .NOT. exx_is_active() .AND. m > 1) then
        call divide (inter_bgrp_comm, m, m_start, m_end)
 #if defined(__CUDA)
@@ -252,7 +252,7 @@ CONTAINS
        CALL calbec (n, vkb, hpsi, becp, m)
     endif
 #endif
-    CALL stop_clock_gpu ('ch_psi_calbec')
+    CALL stop_clock ('ch_psi_calbec')
 #if defined(__CUDA)
     !$acc host_data use_device(hpsi, spsi)
     CALL s_psi_gpu (npwx, n, m, hpsi, spsi)
@@ -276,7 +276,7 @@ CONTAINS
        ENDDO
        !$acc end parallel loop
     END IF
-    CALL stop_clock_gpu ('ch_psi_all_k')
+    CALL stop_clock ('ch_psi_all_k')
     return
   END SUBROUTINE ch_psi_all_k
 
@@ -299,7 +299,7 @@ CONTAINS
     INTEGER :: ibnd, ig
 
     ntemp = nbnd_occ (ik)
-    CALL start_clock_gpu ('ch_psi_all_gamma')
+    CALL start_clock ('ch_psi_all_gamma')
     !$acc data present(evc, ps, hpsi, spsi)
     !$acc kernels present(ps)
     ps (:,:) = 0.d0
@@ -344,7 +344,7 @@ CONTAINS
        ENDDO
        !$acc update device(hpsi, spsi)
     ELSE
-       CALL start_clock_gpu ('ch_psi_calbec')
+       CALL start_clock ('ch_psi_calbec')
        if (use_bgrp_in_hpsi .AND. .NOT. exx_is_active() .AND. m > 1) then
           call divide( inter_bgrp_comm, m, m_start, m_end)
 #if defined(__CUDA)
@@ -367,7 +367,7 @@ CONTAINS
           CALL calbec (n, vkb, hpsi, becp, m)
        end if
 #endif 
-       CALL stop_clock_gpu ('ch_psi_calbec')
+       CALL stop_clock ('ch_psi_calbec')
 #if defined(__CUDA)
        !$acc host_data use_device(hpsi, spsi)
        CALL s_psi_gpu (npwx, n, m, hpsi, spsi)
@@ -383,7 +383,7 @@ CONTAINS
        ENDDO
     ENDDO
     !$acc end parallel loop
-    CALL stop_clock_gpu ('ch_psi_all_gamma')
+    CALL stop_clock ('ch_psi_all_gamma')
     return
   END SUBROUTINE ch_psi_all_gamma
  

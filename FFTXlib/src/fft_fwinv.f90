@@ -368,7 +368,7 @@ SUBROUTINE invfft_y_gpu( fft_kind, f_d, dfft, howmany, stream )
   END IF
   IF (clock_label == ' ') CALL fftx_error__( ' invfft ', ' uninitialized fft kind : '//fft_kind , 1 )
 
-  CALL start_clock_gpu(clock_label)
+  CALL start_clock( clock_label)
 
   IF( dfft%lpara .and. dfft%use_pencil_decomposition ) THEN
 
@@ -424,7 +424,7 @@ SUBROUTINE invfft_y_gpu( fft_kind, f_d, dfft, howmany, stream )
 
   END IF
 
-  CALL stop_clock_gpu( clock_label )
+  CALL stop_clock( clock_label )
 
   RETURN
 
@@ -489,7 +489,7 @@ SUBROUTINE fwfft_y_gpu( fft_kind, f_d, dfft, howmany, stream )
   END IF
   IF (clock_label == ' ') CALL fftx_error__( ' fwfft ', ' uninitialized fft kind : '//fft_kind , 1 )
 
-  CALL start_clock_gpu(clock_label)
+  CALL start_clock(clock_label)
 
   IF( dfft%lpara .and. dfft%use_pencil_decomposition ) THEN
 
@@ -545,7 +545,7 @@ SUBROUTINE fwfft_y_gpu( fft_kind, f_d, dfft, howmany, stream )
 
   END IF
 
-  CALL stop_clock_gpu( clock_label )
+  CALL stop_clock( clock_label )
   
   RETURN
   !

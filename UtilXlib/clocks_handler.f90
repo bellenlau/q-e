@@ -170,7 +170,7 @@ SUBROUTINE start_clock( label )
   !
   IMPLICIT NONE
   !
-  CHARACTER(len=*) :: label
+  CHARACTER(len=*), INTENT(IN) :: label
   !
   CHARACTER(len=12):: label_
   INTEGER          :: n
@@ -462,7 +462,7 @@ SUBROUTINE stop_clock_gpu( label )
   !
   ! ... clock not found
   !
-  WRITE( stdout, '("stop_clock_gpu: no clock for ",A12," found !")' ) label
+  WRITE( stdout, '("stop_clock: no clock for ",A12," found !")' ) label
   !
   RETURN
   !

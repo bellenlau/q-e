@@ -317,7 +317,7 @@ SUBROUTINE newd_gpu( )
      !
   END IF
   !
-  CALL start_clock_gpu( 'newd' )
+  CALL start_clock( 'newd' )
   allocate(deeq_h( nhm, nhm, nat, nspin ))
   !
   ! move atom type info to GPU
@@ -388,7 +388,7 @@ SUBROUTINE newd_gpu( )
   ENDIF
   !
   CALL buffer%release_buffer(ityp_d, ierr)
-  CALL stop_clock_gpu( 'newd' )
+  CALL stop_clock( 'newd' )
   !
   if (noncolin) then
      !$acc update self(deeq_nc)

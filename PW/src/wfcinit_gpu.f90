@@ -45,7 +45,7 @@ SUBROUTINE wfcinit_gpu()
   CHARACTER (LEN=256)  :: dirname
   TYPE ( output_type ) :: output_obj
   !
-  CALL start_clock_gpu( 'wfcinit' )
+  CALL start_clock( 'wfcinit' )
   CALL using_evc(0) ! this may be removed
   !
   ! ... Orthogonalized atomic functions needed for DFT+U and other cases
@@ -162,7 +162,7 @@ SUBROUTINE wfcinit_gpu()
   !
   IF (  ( .NOT. lscf .AND. .NOT. lelfield ) .OR. TRIM(starting_wfc) == 'file' ) THEN
      !
-     CALL stop_clock_gpu( 'wfcinit' )
+     CALL stop_clock( 'wfcinit' )
      RETURN
      !
   END IF
@@ -202,7 +202,7 @@ SUBROUTINE wfcinit_gpu()
      !
   END DO
   !
-  CALL stop_clock_gpu( 'wfcinit' )
+  CALL stop_clock( 'wfcinit' )
   RETURN
   !
 END SUBROUTINE wfcinit_gpu
@@ -284,9 +284,9 @@ SUBROUTINE init_wfc_gpu ( ik )
   !
   IF ( n_starting_atomic_wfc > 0 ) THEN
      !
-     CALL start_clock_gpu( 'wfcinit:atomic' ); !write(*,*) 'start wfcinit:atomic' ; FLUSH(6)
+     CALL start_clock( 'wfcinit:atomic' ); !write(*,*) 'start wfcinit:atomic' ; FLUSH(6)
      CALL atomic_wfc_gpu( ik, wfcatom_d )
-     CALL stop_clock_gpu( 'wfcinit:atomic' ); !write(*,*) 'stop wfcinit:atomic' ; FLUSH(6)
+     CALL stop_clock( 'wfcinit:atomic' ); !write(*,*) 'stop wfcinit:atomic' ; FLUSH(6)
      !
      IF ( starting_wfc == 'atomic+random' .AND. &
          n_starting_wfc == n_starting_atomic_wfc ) THEN
@@ -386,10 +386,10 @@ SUBROUTINE init_wfc_gpu ( ik )
   ! ... subspace diagonalization (calls Hpsi)
   !
   IF ( xclib_dft_is('hybrid') .and. lscf  ) CALL stop_exx()
-  CALL start_clock_gpu( 'wfcinit:wfcrot' ); !write(*,*) 'start wfcinit:wfcrot' ; FLUSH(6)
+  CALL start_clock( 'wfcinit:wfcrot' ); !write(*,*) 'start wfcinit:wfcrot' ; FLUSH(6)
   CALL using_evc_d(2)  ! rotate_wfc_gpu (..., evc_d, etatom_d) -> evc : out (not specified)
   CALL rotate_wfc_gpu ( npwx, ngk(ik), n_starting_wfc, gstart, nbnd, wfcatom_d, npol, okvan, evc_d, etatom_d )
-  CALL stop_clock_gpu( 'wfcinit:wfcrot' ); !write(*,*) 'stop wfcinit:wfcrot' ; FLUSH(6)
+  CALL stop_clock( 'wfcinit:wfcrot' ); !write(*,*) 'stop wfcinit:wfcrot' ; FLUSH(6)
   !
   lelfield = lelfield_save
   !

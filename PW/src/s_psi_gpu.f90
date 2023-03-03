@@ -54,7 +54,7 @@ SUBROUTINE s_psi_gpu( lda, n, m, psi_d, spsi_d )
   INTEGER :: column_type
   INTEGER, ALLOCATABLE :: recv_counts(:), displs(:)
   !
-  CALL start_clock_gpu( 's_psi_bgrp' )
+  CALL start_clock( 's_psi_bgrp' )
   !
   IF (use_bgrp_in_hpsi .AND. .NOT. exx_is_active() .AND. m > 1) THEN
      ! use band parallelization here
@@ -75,7 +75,7 @@ SUBROUTINE s_psi_gpu( lda, n, m, psi_d, spsi_d )
      CALL s_psi__gpu( lda, n, m, psi_d, spsi_d )
   ENDIF
   !
-  CALL stop_clock_gpu( 's_psi_bgrp' )
+  CALL stop_clock( 's_psi_bgrp' )
 #endif
   !
   RETURN
@@ -145,7 +145,7 @@ SUBROUTINE s_psi__gpu( lda, n, m, psi_d, spsi_d )
       spsi_host = spsi_d
   END IF
   !
-  CALL start_clock_gpu( 's_psi' )  
+  CALL start_clock( 's_psi' )  
   !
   ! ... The product with the beta functions
   !
@@ -199,7 +199,7 @@ SUBROUTINE s_psi__gpu( lda, n, m, psi_d, spsi_d )
      !
   ENDIF    
   !
-  CALL stop_clock_gpu( 's_psi' )
+  CALL stop_clock( 's_psi' )
 #else
   COMPLEX(DP), ALLOCATABLE :: psi_host(:,:)
   COMPLEX(DP), ALLOCATABLE ::spsi_host(:,:)
